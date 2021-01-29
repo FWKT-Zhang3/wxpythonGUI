@@ -17,6 +17,7 @@ class LoginPage(wx.Frame):
         self.Show(True)
 
     def init_ui(self):
+        """ 绘制登录界面 """
         self.panel = wx.Panel(self)
         self.panel.SetBackgroundColour((255, 255, 255))
         self.panel.Refresh()
@@ -94,12 +95,14 @@ class MainPage(wx.Frame):
         self.info_count = 0
         self.package_num = 0
         self.rest_time = 0
+        self.timer_count = 0
         self.updated = False
         self.timer = None
         self.init_ui()
         self.Show(True)
 
     def init_ui(self):
+        """ 绘制消息面板 """
         self.panel = wx.Panel(self)
         self.panel.SetBackgroundColour((255, 255, 255))
         self.panel.Refresh()
@@ -107,10 +110,13 @@ class MainPage(wx.Frame):
         # timer
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.update, self.timer)
-        self.timer.Start(100)
+        self.timer.Start(50)
 
         # Font
         font = wx.Font(14, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+
+        # 获取信息
+        self.get_values()
 
         # 第一行文本
         message1 = "需要更新 " + str(self.info_num) + " 条信息"
@@ -127,7 +133,7 @@ class MainPage(wx.Frame):
         self.text3.SetFont(font)
 
         # 第四行文本
-        message4 = "分报个数：" + str(self.package_num)
+        message4 = "分包个数：" + str(self.package_num)
         self.text4 = wx.StaticText(self.panel, label=message4, pos=(140, 175))
         self.text4.SetFont(font)
 
@@ -136,31 +142,59 @@ class MainPage(wx.Frame):
         self.text5 = wx.StaticText(self.panel, label=message5, pos=(140, 205))
         self.text5.SetFont(font)
 
-    def update(self, event):
-        # 调用函数，更新数据
-        self.info_num = 100
-        self.info_count += 1
+    def get_values(self):
+        """
+        获取：
+         - 需要更新的信息个数 -> info_num
+         - 需要更新几条信息 -> info_count
+         - 分包个数 -> package_num
+         - 休息时间 -> rest_time
+         """
+        self.info_num = 10
         self.package_num = 1
-        self.rest_time += 1
+        self.info_count = 0
+        self.rest_time = 0
 
-        # 更新文本
-        message1 = "需要更新 " + str(self.info_num) + " 条信息"
-        message2 = "更新第 " + str(self.info_count) + " 条信息"
-        message4 = "分报个数：" + str(self.package_num)
-        message5 = "休息 " + str(self.rest_time) + "s"
-        self.text1.SetLabel(message1)
-        self.text2.SetLabel(message2)
-        self.text4.SetLabel(message4)
-        self.text5.SetLabel(message5)
+    def update(self, event):
+        """
+        timer 触发的update，更新面板信息
+        """
 
+        # 控制刷新速率
+        self.timer_count += 50
+
+        # 判断是否更新完毕
         if self.info_count == self.info_num:
-            self.timer.Stop()
-
             # 调用函数判断最后一条是否更新完毕
             self.updated = True
 
+        # 关闭timer，并弹出提示信息
         if self.updated:
+            self.timer.Stop()
             wx.MessageBox("成功！")
+
+        # 更新面板内容
+        if self.timer_count == 1000:
+            self.timer_count = 0
+
+            # # 调用函数，更新数据
+            # self.get_values()
+
+            #######################
+            # 此处手动更新，注意删掉
+            self.info_count += 1
+            self.rest_time += 1
+            #######################
+
+            # 更新文本
+            message1 = "需要更新 " + str(self.info_num) + " 条信息"
+            message2 = "更新第 " + str(self.info_count) + " 条信息"
+            message4 = "分包个数：" + str(self.package_num)
+            message5 = "休息 " + str(self.rest_time) + "s"
+            self.text1.SetLabel(message1)
+            self.text2.SetLabel(message2)
+            self.text4.SetLabel(message4)
+            self.text5.SetLabel(message5)
 
 
 def main():
